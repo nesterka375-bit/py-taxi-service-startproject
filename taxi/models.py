@@ -1,5 +1,4 @@
 from typing import Any
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -17,17 +16,12 @@ class Manufacturer(models.Model):
 
 class Driver(AbstractUser):
     license_number = models.CharField(max_length=255, unique=True)
-    username = models.CharField(max_length=255, unique=True)
-    email = models.EmailField(max_length=255)
-    password = models.CharField(max_length=255)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
 
     class Meta:
         ordering = ('username', )
 
     def __str__(self: Any) -> str:
-        return f"{self.username}: {self.first_name} {self.last_name}"
+        return self.username + ': ' + self.first_name + ' ' + self.last_name
 
 
 class Car(models.Model):
@@ -35,14 +29,13 @@ class Car(models.Model):
     manufacturer = models.ForeignKey(
         Manufacturer,
         on_delete=models.CASCADE,
-        related_name='manufacturer'
+        related_name='cars'
     )
-    drivers = models.ManyToManyField(Driver, related_name='drivers')
+    drivers = models.ManyToManyField(Driver, related_name='cars')
 
     class Meta:
         ordering = ('model', )
 
     def __str__(self: Any) -> str:
-        return (f"{self.model} ("
-                f"manufacturer: {self.manufacturer}, "
-                f"driver: {self.drivers.username})")
+        names = ', '.join([driver.username for driver in self.drivers.all()])
+        return self.model + ' (Drivers: ' + names + ')'
